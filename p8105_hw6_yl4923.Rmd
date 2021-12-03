@@ -48,7 +48,7 @@ Now there are `r sum(sapply(clean_bwt, function(x)all(any(is.na(x)))))` columns 
 
 As we are trying to using regression to understand which factors are associated with `bwt` (child birth weight). With `r ncol(clean_bwt) - 1` available predictors, the multicollinearity should be considered. By using `cor(bwt)`, I've found that `frace`-`mrace`, `ppwt-ppbmi` and `ppwt-blength` are highly correlated (>0.85), and thus I would include these pairs with each other in the model. Now I will start with a step wise regression process.
 ```{r step-starter, echo = TRUE, results='hide'}
-# 1.2 model building
+# 1.2.1 model building
 saturated_model = lm(bwt ~ ., data = clean_bwt)
 step_regress = 
   step(saturated_model, direction = 'both')
@@ -67,6 +67,20 @@ proposed_model = function(df) {
 }
 ```
 
+```{r}
+# 1.2.2 proposed model evaluation
+clean_bwt %>% 
+  add_predictions(proposed_model(.)) %>% 
+  add_residuals(proposed_model(.)) %>% 
+  ggplot(data = ., aes(x = pred, y = resid)) +
+  geom_point(alpha = 0.2, color = "red") +
+  labs(
+    title = "Prediced values vs residuals in proposed model",
+    x = "Predicted values",
+    y = "Residual values"
+  )
+```
+Apparently, the proposed model is not perfect. The residuals do not form an ideal pattern across the range of predicted values. There are a few values off the general horizontal band at these predictions, suggesting that these children may be outliers. There are also 2 children predicted to have little to negative weight.
 
 ```{r}
 # 1.3 comparisons by cross-validated prediction error
