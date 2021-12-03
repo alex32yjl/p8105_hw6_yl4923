@@ -46,7 +46,7 @@ clean_bwt =
 ```
 Now there are `r sum(sapply(clean_bwt, function(x)all(any(is.na(x)))))` columns with missing values in the cleaned birth weight data set.
 
-As we are trying to using regression to understand which factors are associated with `bwt` (child birth weight). With `r ncol(clean_bwt) - 1` available predictors, the multicollinearity should be considered. By using `cor(bwt)`, I've found that `frace`-`mrace`, `ppwt-ppbmi` and `ppwt-blength` are highly correlated (>0.85), and thus I would include these pairs with each other in the model. Now I will start with a step wise regression process.
+As we are trying to using regression to understand which factors are associated with `bwt` (child birth weight). With `r ncol(clean_bwt) - 1` available predictors, the multicollinearity should be considered. By using `cor(bwt)`, I've found that `frace`-`mrace`, `ppwt-ppbmi` and `ppwt-blength` are highly correlated (>0.85), and thus I would not include these pairs with each other in the model. Now I will start with a step wise regression process.
 ```{r step-starter, echo = TRUE, results='hide'}
 # 1.2.1 model building
 saturated_model = lm(bwt ~ ., data = clean_bwt)
@@ -112,7 +112,22 @@ cv =
          rmse_la = map2_dbl(la_model, test, ~rmse(model = .x, data = .y)),
          rmse_int = map2_dbl(interact_model, test, ~rmse(model = .x, data = .y)))
 ```
-
+As firstly splitting up the data set into a training and test for cross-validation, each of the models on the training data is applied to create training-test pair. RMSE measures then is calculated to obtain the range of accuracy of each model, which would be shown in the graph below.
+```{r}
+cv %>% 
+  select(starts_with("rmse")) %>% 
+  gather(key = model, value = rmse) %>% 
+  mutate(model = str_replace(model, "rmse_", ""),
+         model = fct_inorder(model)) %>% 
+  ggplot(data = ., aes(rmse, fill = model)) + 
+  geom_density(alpha = 0.3) +
+  labs(
+    title = "Distribution of RMSE values in model cross-validation",
+    x = "RMSE value from test dataset",
+    y = "Density"
+  )
+```
+My proposed model and interaction model do a better job than the length-age one in prediction, given the length-age has the highest RMSE. This makes sense as length-age only considers only 2 variables, length at birth and gestational age to predict birth weight. This suggests a lack of covariates decrease the accuracy of prediction compared to the two models with more variables. 
 
 
 ## Problem 2
