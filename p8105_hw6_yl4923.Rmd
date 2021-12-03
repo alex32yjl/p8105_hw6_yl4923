@@ -29,7 +29,8 @@ theme_set(theme_minimal() + theme(legend.position = "bottom"))
 ## Problem 1 Birthweight
 ```{r data tidy}
 # 1.1 convert numeric to factor; missing data
-bwt = read_csv(file = "./data/birthweight.csv",
+bwt = 
+  read_csv(file = "./data/birthweight.csv",
                         col_types = "dddddddddddddddddddd") 
 clean_bwt = 
   bwt %>% 
@@ -128,7 +129,7 @@ My proposed model and interaction model do a better job than the length-age one 
 
 
 ## Problem 2 2017 Central Park weather
-```{r, message=FALSE}
+```{r, include=FALSE}
 weather_df = 
   rnoaa::meteo_pull_monitors(
     c("USW00094728"),
@@ -201,4 +202,4 @@ boot_straps_df %>%
     x = "log(β^0∗β^1)"
   )
 ```
-The plots above show the density distributions of two quantities estimated from 5,000 bootstrap samples from the 2017 Central Park weather data. The *r_squared distribution* has a relatively heavy tail extending to low values while the *log(β^0∗β^1) distribution* has a relatively normal distribution. Both the distribution features may be related to the frequency in which large outliers are included in the bootstrap samples.
+The plots above show the density distributions of two quantities estimated from 5,000 bootstrap samples from the 2017 Central Park weather data. The r-squared distribution has a relatively heavy tail extending to low values while the log(β^0∗β^1) distribution has a relatively normal distribution. Both the distribution features may be related to the frequency in which large outliers are included in the bootstrap samples.
