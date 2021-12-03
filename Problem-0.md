@@ -3,6 +3,10 @@ p8105\_hw6\_yl4923
 Yujia Li
 12/3/2021
 
+## Problem 0
+
+Github repo, local doc, local data Github document
+
 ``` r
 library(tidyverse)
 ```
