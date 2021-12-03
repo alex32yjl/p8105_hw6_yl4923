@@ -6,8 +6,8 @@ output: github_document
 ---
 
 ## Problem 0
-# create my public Github repo and local R with a single .Rmd file that renders to github_document
-# create a sub-directory to store the local data files used in the assignment, and use relative paths to access these data files
+create my public Github repo and local R with a single .Rmd file that renders to github_document.
+create a sub-directory to store the local data files used in the assignment, and use relative paths to access these data files.
 ```{r setup, include=FALSE}
 library(tidyverse)
 library(modelr)
@@ -29,10 +29,52 @@ scale_fill_discrete = scale_fill_viridis_d
 theme_set(theme_minimal() + theme(legend.position = "bottom"))
 ```
 
-
-## Problem 1
-```{r}
+## Problem 1 Birthweight
+```{r data tidy}
+# 1.1 convert numeric to factor; missing data
+bwt = read_csv(file = "./data/birthweight.csv",
+                        col_types = "dddddddddddddddddddd") 
+clean_bwt = 
+  bwt %>% 
+  janitor::clean_names() %>%
+  drop_na() %>% 
+  mutate(babysex = as.factor(ifelse(babysex == 1, "Male", "Female")),
+         frace = as.factor(frace),
+         malform = as.factor(ifelse(malform == 0, "Absent", "Present")),
+         mrace = as.factor(mrace)) %>% 
+  select(bwt, everything())
 ```
+Now there are `r sum(sapply(clean_bwt, function(x)all(any(is.na(x)))))` columns with missing values in the cleaned birth weight data set.
+
+As we are trying to using regression to understand which factors are associated with `bwt` (child birth weight). With `r ncol(clean_bwt) - 1` available predictors, the multicollinearity should be considered. By using `cor(bwt)`, I've found that `frace`-`mrace`, `ppwt-ppbmi` and `ppwt-blength` are highly correlated (>0.85), and thus I would include these pairs with each other in the model. Now I will start with a step wise regression process.
+```{r step-starter, echo = TRUE, results='hide'}
+# 1.2 model building
+saturated_model = lm(bwt ~ ., data = clean_bwt)
+step_regress = 
+  step(saturated_model, direction = 'both')
+```
+
+```{r}
+knitr::kable(broom::tidy(step_regress))
+```
+The result is shown in the table above with a model having `r length(step_regress$coefficients)` coefficients. Since the range of `bwt` ranges from hundreds to thousands, I would suspect that variables included do not necessarily underlie birth weight. Thus, considering factors that I do not think impact a lot on the birth weight, `fincome`, `mheight`,`ppwt`, `gaweeks` and `smoken` are removed. The final hypothesized model will include: `babysex`, `bhead`,`delwt`, `blength`, `mrace`, and `parity`, which is stored as a funciton: 
+```{r my-model }
+proposed_model = function(df) {
+  return(
+    lm(bwt ~ babysex + bhead + blength + mrace + parity + delwt, 
+       data = df)
+  )
+}
+```
+
+
+```{r}
+# 1.3 comparisons by cross-validated prediction error
+#1.3.1 length at birth and gestational age as predictors (main effects only)
+
+#1.3.2 head circumference, length, sex, and all interactions (including the three-way interaction) between these
+```
+
 
 ## Problem 2
 ```{r}
