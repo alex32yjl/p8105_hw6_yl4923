@@ -179,4 +179,9 @@ r_high_quantile = quantile(r_squared, probs = c(0.025, 0.975))[[2]]
 log_low_quantile = quantile(log_beta0_beta1, probs = c(0.025, 0.975))[[1]]
 log_high_quantile = quantile(log_beta0_beta1, probs = c(0.025, 0.975))[[2]]
 ```
+In the `boot_straps_df`, the 2.5% quantile for r^2 is `r round(r_low_quantile, digit = 3)` and the 97.5% quantile for r^2 is `r round(r_high_quantile, digit = 3)`. The 2.5% quantile for log(β^0 ∗ β^1) is `r round(log_low_quantile, digit = 3)` and the 97.5% quantile for r^2 is `r round(log_high_quantile, digit = 3)`. Next, the distribution of 5000 bootstrap estimate is plotted in order to identify the  2.5% and 97.5% quantiles for a 95% confidence interval by the code chunk below.
+
+```{r}
+
+```
 
