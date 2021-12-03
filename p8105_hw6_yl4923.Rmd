@@ -5,9 +5,6 @@ date: "12/3/2021"
 output: github_document
 ---
 
-## Problem 0
-create my public Github repo and local R with a single .Rmd file that renders to github_document.
-create a sub-directory to store the local data files used in the assignment, and use relative paths to access these data files.
 ```{r setup, include=FALSE}
 library(tidyverse)
 library(modelr)
@@ -171,6 +168,11 @@ boot_straps_df =
   filter(term == "(Intercept)") %>% 
   select(.id, r.squared, log_beta0_beta1)
 
+boot_straps_df
+```
+
+
+```{r}
 r_squared = pull(boot_straps_df, r.squared)
 
 log_beta0_beta1 = pull(boot_straps_df, log_beta0_beta1)
@@ -182,6 +184,21 @@ log_high_quantile = quantile(log_beta0_beta1, probs = c(0.025, 0.975))[[2]]
 In the `boot_straps_df`, the 2.5% quantile for r^2 is `r round(r_low_quantile, digit = 3)` and the 97.5% quantile for r^2 is `r round(r_high_quantile, digit = 3)`. The 2.5% quantile for log(β^0 ∗ β^1) is `r round(log_low_quantile, digit = 3)` and the 97.5% quantile for r^2 is `r round(log_high_quantile, digit = 3)`. Next, the distribution of 5000 bootstrap estimate is plotted in order to identify the  2.5% and 97.5% quantiles for a 95% confidence interval by the code chunk below.
 
 ```{r}
+# 2.2 plot 2 estimations 
+boot_straps_df %>% 
+  filter(r.squared >= r_low_quantile, r.squared <= r_high_quantile) %>%
+  ggplot(aes(x = r.squared)) + geom_density() +
+  labs(
+    title = "Distribution of r_squared estimates"
+  )
 
+boot_straps_df %>% 
+  filter(log_beta0_beta1 >= log_low_quantile,
+         log_beta0_beta1 <= log_high_quantile) %>%
+  ggplot(aes(x = log_beta0_beta1)) + geom_density() +
+  labs(
+    title = "Distribution of log(β^0∗β^1) estimates",
+    x = "log(β^0∗β^1)"
+  )
 ```
-
+The plots above show the density distributions of two quantities estimated from 5,000 bootstrap samples from the 2017 Central Park weather data. The *r_squared distribution* has a relatively heavy tail extending to low values while the *log(β^0∗β^1) distribution* has a relatively normal distribution. Both the distribution features may be related to the frequency in which large outliers are included in the bootstrap samples.
