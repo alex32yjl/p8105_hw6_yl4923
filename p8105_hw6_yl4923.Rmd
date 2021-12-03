@@ -57,7 +57,7 @@ step_regress =
 ```{r}
 knitr::kable(broom::tidy(step_regress))
 ```
-The result is shown in the table above with a model having `r length(step_regress$coefficients)` coefficients. Since the range of `bwt` ranges from hundreds to thousands, I would suspect that variables included do not necessarily underlie birth weight. Thus, considering factors that I do not think impact a lot on the birth weight, `fincome`, `mheight`,`ppwt`, `gaweeks` and `smoken` are removed. The final hypothesized model will include: `babysex`, `bhead`,`delwt`, `blength`, `mrace`, and `parity`, which is stored as a funciton: 
+The result is shown in the table above with a model having `r length(step_regress$coefficients)` coefficients. Since the range of `bwt` ranges from hundreds to thousands, I would suspect that variables included do not necessarily underlie birth weight. Thus, considering significance as well as factors that I do not think impact a lot on the birth weight, `fincome`, `mheight`,`ppwt`, `gaweeks` and `smoken` are removed. The final hypothesized model will include: `babysex`, `bhead`,`delwt`, `blength`, `mrace`, and `parity`, which is stored as a funciton: 
 ```{r my-model }
 proposed_model = function(df) {
   return(
@@ -130,6 +130,53 @@ cv %>%
 My proposed model and interaction model do a better job than the length-age one in prediction, given the length-age has the highest RMSE. This makes sense as length-age only considers only 2 variables, length at birth and gestational age to predict birth weight. This suggests a lack of covariates decrease the accuracy of prediction compared to the two models with more variables. 
 
 
-## Problem 2
-```{r}
+## Problem 2 2017 Central Park weather
+```{r, message=FALSE}
+weather_df = 
+  rnoaa::meteo_pull_monitors(
+    c("USW00094728"),
+    var = c("PRCP", "TMIN", "TMAX"), 
+    date_min = "2017-01-01",
+    date_max = "2017-12-31") %>%
+  mutate(
+    name = recode(id, USW00094728 = "CentralPark_NY"),
+    tmin = tmin / 10,
+    tmax = tmax / 10) %>%
+  select(name, id, everything())
 ```
+
+```{r}
+#2.1 bootstrapping
+set.seed(1)
+
+boot_straps = 
+  weather_df %>% 
+  bootstrap(n = 5000)
+
+boot_straps_df = 
+  boot_straps %>% 
+  mutate(
+    models = map(strap, ~lm(tmax ~ tmin, data = .x) ),
+    result_1 = map(models, broom::glance),
+    result_2 = map(models, broom::tidy)) %>% 
+  select(-strap, -models) %>% 
+  unnest(result_1) %>% 
+  select(.id, r.squared, result_2) %>% 
+  unnest(result_2) %>% 
+  select(.id, r.squared, term, estimate) %>% 
+  mutate(
+    estimate_2 = lead(estimate, 1),
+    log_beta0_beta1 = log10(estimate * estimate_2)
+    ) %>% 
+  filter(term == "(Intercept)") %>% 
+  select(.id, r.squared, log_beta0_beta1)
+
+r_squared = pull(boot_straps_df, r.squared)
+
+log_beta0_beta1 = pull(boot_straps_df, log_beta0_beta1)
+r_low_quantile = quantile(r_squared, probs = c(0.025, 0.975))[[1]]
+r_high_quantile = quantile(r_squared, probs = c(0.025, 0.975))[[2]]
+log_low_quantile = quantile(log_beta0_beta1, probs = c(0.025, 0.975))[[1]]
+log_high_quantile = quantile(log_beta0_beta1, probs = c(0.025, 0.975))[[2]]
+```
+
