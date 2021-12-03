@@ -1,0 +1,39 @@
+---
+title: 'p8105_hw6_yl4923'
+author: "Yujia Li"
+date: "12/3/2021"
+output: github_document
+---
+
+## Problem 0
+# create my public Github repo and local R with a single .Rmd file that renders to github_document
+# create a sub-directory to store the local data files used in the assignment, and use relative paths to access these data files
+```{r setup, include=FALSE}
+library(tidyverse)
+library(modelr)
+library(mgcv)
+
+knitr::opts_chunk$set(
+	echo = TRUE,
+	warning = FALSE,
+	fig.width = 8, 
+  fig.height = 6,
+  out.width = "90%"
+)
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+```
+
+
+## Problem 1
+```{r}
+```
+
+## Problem 2
+```{r}
+```
